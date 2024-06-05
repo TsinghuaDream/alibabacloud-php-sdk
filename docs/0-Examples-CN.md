@@ -11,54 +11,62 @@
 ## 通过 Composer 来管理项目依赖(推荐)
 
 ```bash
-# require alibabacloud/imagesearch-20200212 for example
-composer require alibabacloud/imagesearch-20200212
+# require alibabacloud/imagesearch-20190325 for example
+composer require alibabacloud/imagesearch-20190325 2.0.2
 ```
 
 # 快速使用
 
-以下这个代码示例向您展示了调用 Alibaba Cloud SDK for PHP 的3个主要步骤：
+以下这个代码示例向您展示了调用 Alibaba Cloud SDK for PHP 的主要步骤：
+1. 配置环境变量ALIBABA_CLOUD_ACCESS_KEY_ID和ALIBABA_CLOUD_ACCESS_KEY_SECRET。
 
-1. 创建`Config`实例并初始化。
+2. 创建`Config`实例并初始化。
 
-2. 创建`Client`实例并初始化。
+3. 创建`Client`实例并初始化。
 
-3. 创建`RuntimeOptions`实例并设置运行参数。
+4. 创建`RuntimeOptions`实例并设置运行参数。
 
-4. 创建 API 请求并设置参数。
+5. 创建 API 请求并设置参数。
 
-5. 发起请求并处理应答或异常。
+6. 发起请求并处理应答或异常。
 
 ```php
+<?php
 namespace demo;
 
-require __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . \DIRECTORY_SEPARATOR . '..' . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php';
 
-use AlibabaCloud\SDK\ImageSearch\V20200212\ImageSearch;
-use AlibabaCloud\Tea\Rpc\Rpc\Config;
+use AlibabaCloud\SDK\ImageSearch\V20190325\ImageSearch;
+use Darabonba\OpenApi\Models\Config;
+use AlibabaCloud\SDK\ImageSearch\V20190325\Models\SearchImageRequest;
 use AlibabaCloud\Tea\Utils\Utils\RuntimeOptions;
+use AlibabaCloud\Tea\Exception\TeaUnableRetryError;
 
-$config                  = new Config();
-$config->accessKeyId     = "<Access-Key-Id>";
-$config->accessKeySecret = "<Access-Key-Secret>";
-$config->regionId        = "cn-shanghai";
-$config->endpoint        = "imagesearch.cn-shanghai.aliyuncs.com";
-$client                  = new ImageSearch($config);
-$request                 = new ImageSearch\SearchImageByNameRequest();
-$request->picName        = 'test';
+$config = new Config();
+// 必填，请确保代码运行环境设置了环境变量 ALIBABA_CLOUD_ACCESS_KEY_ID。
+$config->accessKeyId = getenv("ALIBABA_CLOUD_ACCESS_KEY_ID");
+// 必填，请确保代码运行环境设置了环境变量 ALIBABA_CLOUD_ACCESS_KEY_SECRET。
+$config->accessKeySecret = getenv("ALIBABA_CLOUD_ACCESS_KEY_SECRET");
+$config->regionId = "cn-shanghai";
+$config->endpoint = "imagesearch.cn-shanghai.aliyuncs.com";
+$client = new ImageSearch($config);
+$request = new SearchImageRequest();
+$request->instanceName = "phimagesearch";
+$request->picName = 'test';
 
-$runtime                 = new RuntimeOptions();
-$runtime->maxIdleConns   = 3;
+$runtime = new RuntimeOptions();
+$runtime->maxIdleConns = 3;
 $runtime->connectTimeout = 10000;
-$runtime->readTimeout    = 10000;
+$runtime->readTimeout = 10000;
+$headers = [];
 try {
-    $response = $client->searchImageByName($request, $runtime);
-    var_dump($response->toMap());
+    $response = $client->searchImageWithOptions($request, $headers, $runtime);
+    var_dump($response);
 } catch (TeaUnableRetryError $e) {
     var_dump($e->getMessage());
-    var_dump($e->getErrorInfo());
-    var_dump($e->getLastException());
-    var_dump($e->getLastRequest());
+    // var_dump($e->getErrorInfo());
+    // var_dump($e->getLastException());
+    // var_dump($e->getLastRequest());
 }
 ```
 
